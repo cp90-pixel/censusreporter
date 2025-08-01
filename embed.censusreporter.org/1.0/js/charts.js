@@ -81,17 +81,23 @@ function Chart(options) {
                 }
                 d3.keys(d).filter(function(v) { return chart.exclude(metadataFields, v) })
                     .forEach(function(v, i) {
+                        var rawValue = d[v].values['this'];
+                        var isNA = (rawValue === null || rawValue === undefined || rawValue === 'N/A' || rawValue === '' || isNaN(+rawValue));
                         dataObj.values.push({
                             name: v,
-                            value: +d[v].values['this'],
+                            value: isNA ? 0 : +rawValue, // plot N/A as 0
+                            isNA: isNA,
                             context: d[v]
                         })
                     })
             } else {
                 // otherwise, just grab the name and value of the data point
+                var rawValue = d.values['this'];
+                var isNA = (rawValue === null || rawValue === undefined || rawValue === 'N/A' || rawValue === '' || isNaN(+rawValue));
                 dataObj = {
                     name: d.name,
-                    value: +d.values['this'],
+                    value: isNA ? 0 : +rawValue, // plot N/A as 0
+                    isNA: isNA,
                     context: d
                 }
             }
@@ -169,11 +175,11 @@ function Chart(options) {
                 var xValues = [];
                 chart.chartDataValues.forEach(function(d, i) {
                     d3.values(d.values).forEach(function(v, i) {
-                        xValues.push(v.value)
+                        if (!v.isNA) xValues.push(v.value); // ignore N/A for min/max
                     });
                 });
             } else {
-                var xValues = chart.chartDataValues.map(function(d) { return d.value; });
+                var xValues = chart.chartDataValues.filter(function(d){return !d.isNA;}).map(function(d) { return d.value; });
             }
             var xDomain = [0, (d3.max(xValues) * 1.33)],
                 xTickRange = d3.range(0, (d3.max(xValues) * 1.33), ((d3.max(xValues) * 1.33) / 5));
