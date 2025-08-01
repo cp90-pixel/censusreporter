@@ -19,7 +19,11 @@
                 {% endif %}
             {% endif %}
         </span>
-        <span class="name">{{ stat.name }}</span>
+        <span class="name">{{ stat.name }}
+            {% if stat.metadata.table_id %}
+                <a class="view-table-link" href="/tables/{{ stat.metadata.table_id|cut:"," }}/">View table</a>
+            {% endif %}
+        </span>
         {% if stat.metadata.acs_release and stat.metadata.acs_release != geography.census_release %}
             <span class="small">* {{ stat.metadata.acs_release }} data</span>
         {% endif %}
